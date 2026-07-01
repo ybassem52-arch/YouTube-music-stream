@@ -1,0 +1,138 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: music
+    description: Music operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /music/search:
+    get:
+      operationId: searchMusic
+      tags: [music]
+      summary: Search for music
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongList"
+  /music/trending:
+    get:
+      operationId: getTrendingMusic
+      tags: [music]
+      summary: Get trending music
+      responses:
+        "200":
+          description: Trending songs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongList"
+  /music/stream/{videoId}:
+    get:
+      operationId: getMusicStream
+      tags: [music]
+      summary: Get audio stream URL for a song
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stream URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamResponse"
+        "503":
+          description: No available stream source
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    Song:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        artist:
+          type: string
+        thumbnail:
+          type: string
+        duration:
+          type: string
+      required:
+        - id
+        - title
+        - artist
+        - thumbnail
+    SongList:
+      type: object
+      properties:
+        songs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Song"
+      required:
+        - songs
+    StreamResponse:
+      type: object
+      properties:
+        url:
+          type: string
+        instance:
+          type: string
+        durationSecs:
+          type: number
+          description: Known duration in seconds parsed from the stream URL
+      required:
+        - url
+        - instance
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
